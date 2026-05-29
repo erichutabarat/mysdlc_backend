@@ -23,12 +23,17 @@ func main() {
 	sdlcService := &service.SDLCService{Repo: sdlcRepo}
 	sdlcHandler := &handler.SDLCHandler{Service: sdlcService}
 
+	projectRepo := &repository.ProjectRepository{DB: db}
+	projectService := &service.ProjectService{Repo: projectRepo, SDLCRepo: sdlcRepo}
+	projectHandler := &handler.ProjectHandler{Service: projectService}
+
 
 
 	// Group API routes
 	v1 := r.Group("/api/v1")
 	router.RegisterUserRoutes(v1, userHandler)
 	router.RegisterSDLCRoutes(v1, sdlcHandler)
+	router.RegisterProjectRoutes(v1, projectHandler)
 	router.RegisterHealthRoutes(v1, db)
 
 	// Start server
