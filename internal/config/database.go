@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-
+	"mysdlc_backend/internal/model"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -33,6 +33,14 @@ func ConnectDB() *gorm.DB {
 
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	// 4. Auto-migrate models
+	err = db.AutoMigrate(
+		&model.User{},
+	)
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
 	log.Println("Database connection established")
