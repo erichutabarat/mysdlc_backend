@@ -29,6 +29,7 @@ func main() {
 	v1 := r.Group("/api/v1")
 	router.RegisterUserRoutes(v1, userHandler)
 	router.RegisterSDLCRoutes(v1, sdlcHandler)
+	router.RegisterHealthRoutes(v1, db)
 
 	// Start server
 	r.Run(":8080")
