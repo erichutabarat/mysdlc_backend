@@ -42,3 +42,7 @@ func (s *UserService) Login(email, password string) (string, error) {
     // Generate JWT
     return jwt.GenerateToken(user.ID, user.Role)
 }
+
+func (s *UserService) Profile(userID uint) (*model.User, error) {
+    return s.Repo.GetUserByID(userID)
+}

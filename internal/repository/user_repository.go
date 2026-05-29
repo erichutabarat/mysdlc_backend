@@ -18,3 +18,12 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.User, error) {
 	}
 	return &user, nil
 }
+
+func (r *UserRepository) GetUserByID(id uint) (*model.User, error) {
+	var user model.User
+	if err := r.DB.First(&user, id).Error; err != nil {
+		return nil, err
+	}
+	user.Password = "" // Clear password before returning
+	return &user, nil
+}

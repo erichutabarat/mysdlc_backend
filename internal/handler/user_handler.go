@@ -47,3 +47,19 @@ func (h *UserHandler) Login(c *gin.Context) {
 
     response.Success(c, 200, "Login successful", gin.H{"token": token})
 }
+
+func (h *UserHandler) Profile(c *gin.Context) {
+    userID, exists := c.Get("userID")
+    if !exists {
+        response.Error(c, 401, "Unauthorized")
+        return
+    }
+    
+    user, err := h.Service.Profile(userID.(uint))
+    if err != nil {
+        response.Error(c, 404, "User not found")
+        return
+    }
+    
+    response.Success(c, 200, "User profile", user)
+}

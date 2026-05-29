@@ -2,12 +2,13 @@ package middleware
 
 import (
 	"net/http"
+	"os"
 	"strings"
+	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
+	jwtlib "github.com/golang-jwt/jwt/v5"
 	"mysdlc_backend/pkg/jwt"
-	"os"
 )
 
 func AuthMiddleware(requiredRole string) gin.HandlerFunc {
@@ -18,7 +19,8 @@ func AuthMiddleware(requiredRole string) gin.HandlerFunc {
 			return
 		}
 
-		// Extract "Bearer <token>"
+		log.Printf("DEBUG: Authorization Header received: '%s'", authHeader)
+
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization format"})
@@ -26,10 +28,10 @@ func AuthMiddleware(requiredRole string) gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		
-		// Parse and validate the token
+
 		claims := &jwt.Claims{}
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		
+		token, err := jwtlib.ParseWithClaims(tokenString, claims, func(token *jwtlib.Token) (interface{}, error) {
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
@@ -44,10 +46,8 @@ func AuthMiddleware(requiredRole string) gin.HandlerFunc {
 			return
 		}
 
-		// Set user info in context for use in handlers
 		c.Set("userID", claims.UserID)
 		c.Set("role", claims.Role)
-		
 		c.Next()
 	}
 }
