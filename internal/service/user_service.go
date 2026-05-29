@@ -1,8 +1,10 @@
 package service
 
 import (
+    "errors"
     "mysdlc_backend/internal/model"
     "mysdlc_backend/internal/repository"
+    "mysdlc_backend/pkg/jwt"
     "golang.org/x/crypto/bcrypt"
 )
 
@@ -23,4 +25,20 @@ func (s *UserService) Register(u *model.User) error {
 
     // 3. Persist
     return s.Repo.CreateUser(u)
+}
+
+func (s *UserService) Login(email, password string) (string, error) {
+    // 1. Fetch User
+    user, err := s.Repo.GetUserByEmail(email)
+    if err != nil {
+        return "", err
+    }
+
+    // Verify Password
+    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+        return "", errors.New("invalid email or password")
+    }
+
+    // Generate JWT
+    return jwt.GenerateToken(user.ID, user.Role)
 }

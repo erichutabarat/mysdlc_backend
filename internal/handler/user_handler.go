@@ -30,3 +30,20 @@ func (h *UserHandler) Create(c *gin.Context) {
     user.Password = "" 
     response.Success(c, 201, "User created", user)
 }
+
+func (h *UserHandler) Login(c *gin.Context) {
+    var req model.LoginRequest
+
+    if err := c.ShouldBindJSON(&req); err != nil {
+        response.Error(c, 400, "Invalid request")
+        return
+    }
+
+    token, err := h.Service.Login(req.Email, req.Password)
+    if err != nil {
+        response.Error(c, 401, err.Error())
+        return
+    }
+
+    response.Success(c, 200, "Login successful", gin.H{"token": token})
+}

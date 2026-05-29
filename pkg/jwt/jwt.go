@@ -1,34 +1,45 @@
 package jwt
 
 import (
-    "time"
-    "github.com/golang-jwt/jwt/v5"
+	"log"
+	"os"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
-err := godotenv.Load()
+var jwtKey []byte
+
+// init() runs automatically when the package is initialized
+func init() {
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Warning: .env file not found, using system environment variables")
 	}
 
-var jwtKey = []byte(os.Getenv("JWT_SECRET"))
+	jwtKey = []byte(os.Getenv("JWT_SECRET"))
+	if len(jwtKey) == 0 {
+		log.Fatal("JWT_SECRET is not set in environment variables")
+	}
+}
 
 type Claims struct {
-    UserID uint   `json:"user_id"`
-    Role   string `json:"role"`
-    jwt.RegisteredClaims
+	UserID uint   `json:"user_id"`
+	Role   string `json:"role"`
+	jwt.RegisteredClaims
 }
 
 func GenerateToken(userID uint, role string) (string, error) {
-    expirationTime := time.Now().Add(24 * time.Hour)
-    claims := &Claims{
-        UserID: userID,
-        Role:   role,
-        RegisteredClaims: jwt.RegisteredClaims{
-            ExpiresAt: jwt.NewNumericDate(expirationTime),
-        },
-    }
+	expirationTime := time.Now().Add(24 * time.Hour)
+	claims := &Claims{
+		UserID: userID,
+		Role:   role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
 
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    return token.SignedString(jwtKey)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtKey)
 }
