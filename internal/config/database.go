@@ -40,6 +40,8 @@ func ConnectDB() *gorm.DB {
 		&model.User{},
 		&model.SDLC{},
 		&model.SDLCSteps{},
+		&model.Project{},
+		&model.ProjectPhase{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
