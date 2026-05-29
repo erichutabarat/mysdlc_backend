@@ -56,8 +56,8 @@ func (s *SDLCService) UpdateSDLC(id uint, req *model.UpdateSDLCRequest) (*model.
 						sdlc.Steps[i].Order = *stepReq.Order
 					}
 
-					if stepReq.Required != nil {
-						sdlc.Steps[i].Required = *stepReq.Required
+					if stepReq.IsRequired != nil {
+						sdlc.Steps[i].IsRequired = *stepReq.IsRequired
 					}
 
 					err := s.Repo.UpdateSDLCStep(&sdlc.Steps[i])

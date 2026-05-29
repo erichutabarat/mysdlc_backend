@@ -15,7 +15,8 @@ type SDLCHandler struct {
 
 func (h *SDLCHandler) CreateSDLC(c *gin.Context){
 	userRole, exists := c.Get("role")
-	if !exists || userRole != "admin" {
+	
+	if !exists || userRole != model.UserRole("admin") {
 		response.Error(c, 403, "Forbidden - Admins only")
 		return
 	}
@@ -25,6 +26,13 @@ func (h *SDLCHandler) CreateSDLC(c *gin.Context){
 		response.Error(c, 400, "Invalid request body")
 		return
 	}
+	userID, existsx := c.Get("userID")
+	if !existsx {
+		response.Error(c, 400, "User ID not found")
+		return
+	}
+
+	sdlc.CreatedByID = userID.(uint)
 
 	if err := h.Service.CreateSDLC(&sdlc); err != nil {
 		response.Error(c, 500, "Failed to create SDLC")
@@ -61,7 +69,7 @@ func (h *SDLCHandler) GetSDLCByID(c *gin.Context) {
 func (h *SDLCHandler) UpdateSDLC(c *gin.Context) {
 
 	userRole, exists := c.Get("role")
-	if !exists || userRole != "admin" {
+	if !exists || userRole != model.UserRole("admin") {
 		response.Error(c, 403, "Forbidden - Admins only")
 		return
 	}
@@ -92,7 +100,7 @@ func (h *SDLCHandler) UpdateSDLC(c *gin.Context) {
 
 func (h *SDLCHandler) DeleteSDLC(c *gin.Context) {
 	userRole, exists := c.Get("role")
-	if !exists || userRole != "admin" {
+	if !exists || userRole != model.UserRole("admin") {
 		response.Error(c, 403, "Forbidden - Admins only")
 		return
 	}

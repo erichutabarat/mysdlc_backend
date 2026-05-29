@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 	"time"
-
+	"mysdlc_backend/internal/model"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
@@ -26,11 +26,11 @@ func init() {
 
 type Claims struct {
 	UserID uint   `json:"user_id"`
-	Role   string `json:"role"`
+	Role   model.UserRole `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userID uint, role string) (string, error) {
+func GenerateToken(userID uint, role model.UserRole) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		UserID: userID,

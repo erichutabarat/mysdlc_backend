@@ -4,8 +4,8 @@ import "gorm.io/gorm"
 
 type User struct {
     gorm.Model
-    Email    string `gorm:"unique;not null" json:"email"`
-    Name     string `gorm:"not null" json:"name"`
-    Password string `gorm:"not null" json:"-"`
-    Role     string `gorm:"not null;default:'user'" json:"role"`
+    Name     string   `gorm:"type:varchar(100);not null"      json:"name"`
+    Email    string   `gorm:"type:varchar(150);not null;uniqueIndex" json:"email"`
+    Password string   `gorm:"type:varchar(255);not null"      json:"-"`        // never serialized
+    Role     UserRole `gorm:"type:varchar(20);not null;default:'user'" json:"role"`
 }

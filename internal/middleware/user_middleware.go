@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"net/http"
+	"fmt"
 	"os"
 	"strings"
 	"log"
-
+	"mysdlc_backend/internal/model"
 	"github.com/gin-gonic/gin"
 	jwtlib "github.com/golang-jwt/jwt/v5"
 	"mysdlc_backend/pkg/jwt"
@@ -41,13 +42,14 @@ func AuthMiddleware(requiredRole string) gin.HandlerFunc {
 		}
 
 		// Role check
-		if claims.Role != requiredRole {
+		if claims.Role != model.UserRole(requiredRole) {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
 			return
 		}
 
 		c.Set("userID", claims.UserID)
 		c.Set("role", claims.Role)
+		fmt.Printf("DEBUG: Authenticated user ID: %d with role: %s\n", claims.UserID, claims.Role)
 		c.Next()
 	}
 }
