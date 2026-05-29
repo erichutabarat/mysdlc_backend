@@ -62,19 +62,26 @@ func (h *SDLCHandler) GetAllSDLCs(c *gin.Context) {
 }
 
 func (h *SDLCHandler) GetSDLCByID(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		response.Error(c, 400, "Invalid SDLC ID")
-		return
-	}
+    filter := c.Query("filter")
+    idParam := c.Param("id")
+    id, err := strconv.Atoi(idParam)
+    if err != nil {
+        response.Error(c, 400, "Invalid SDLC ID")
+        return
+    }
 
-	sdlc, err := h.Service.GetSDLCByID(uint(id))
-	if err != nil {
-		response.Error(c, 404, "SDLC not found")
-		return
-	}
-	response.Success(c, 200, "SDLC retrieved successfully", sdlc)
+    sdlc, err := h.Service.GetSDLCByID(uint(id))
+    if err != nil {
+        response.Error(c, 404, "SDLC not found")
+        return
+    }
+
+    if filter == "full" {
+        response.Success(c, 200, "SDLC retrieved successfully", sdlc)
+        return
+    }
+
+    response.Success(c, 200, "SDLC retrieved successfully", model.ToSDLCResponse(*sdlc))
 }
 
 func (h *SDLCHandler) UpdateSDLC(c *gin.Context) {
