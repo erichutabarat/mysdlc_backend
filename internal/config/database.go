@@ -38,6 +38,8 @@ func ConnectDB() *gorm.DB {
 	// 4. Auto-migrate models
 	err = db.AutoMigrate(
 		&model.User{},
+		&model.SDLC{},
+		&model.SDLCSteps{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
