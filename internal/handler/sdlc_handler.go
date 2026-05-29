@@ -42,12 +42,23 @@ func (h *SDLCHandler) CreateSDLC(c *gin.Context){
 }
 
 func (h *SDLCHandler) GetAllSDLCs(c *gin.Context) {
-	sdlcs, err := h.Service.GetAllSDLCs()
-	if err != nil {
-		response.Error(c, 500, "Failed to retrieve SDLCs")
-		return
-	}
-	response.Success(c, 200, "SDLCs retrieved successfully", sdlcs)
+    filter := c.Query("filter")
+    sdlcs, err := h.Service.GetAllSDLCs()
+    if err != nil {
+        response.Error(c, 500, "Failed to retrieve SDLCs")
+        return
+    }
+
+    if filter == "full" {
+        response.Success(c, 200, "SDLCs retrieved successfully", sdlcs)
+        return
+    }
+
+    sdlcResponses := make([]model.SDLCResponse, len(sdlcs))
+    for i, sdlc := range sdlcs {
+        sdlcResponses[i] = model.ToSDLCResponse(sdlc) 
+    }
+    response.Success(c, 200, "SDLCs retrieved successfully", sdlcResponses)
 }
 
 func (h *SDLCHandler) GetSDLCByID(c *gin.Context) {
