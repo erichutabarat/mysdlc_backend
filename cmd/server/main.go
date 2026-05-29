@@ -19,9 +19,17 @@ func main() {
 	userService := &service.UserService{Repo: userRepo}
 	userHandler := &handler.UserHandler{Service: userService}
 
+	sdlcRepo := &repository.SDLCRepository{DB: db}
+	sdlcService := &service.SDLCService{Repo: sdlcRepo}
+	sdlcHandler := &handler.SDLCHandler{Service: sdlcService}
+
+
+
 	// Group API routes
 	v1 := r.Group("/api/v1")
 	router.RegisterUserRoutes(v1, userHandler)
+	router.RegisterSDLCRoutes(v1, sdlcHandler)
 
+	// Start server
 	r.Run(":8080")
 }
