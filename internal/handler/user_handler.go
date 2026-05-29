@@ -28,7 +28,13 @@ func (h *UserHandler) Create(c *gin.Context) {
     }
 
     user.Password = "" 
-    response.Success(c, 201, "User created", user)
+    registerResponse := model.RegisterResponse{
+        ID: user.ID,
+        Email: user.Email,
+        Name: user.Name,
+        Role: user.Role,
+    }
+    response.Success(c, 201, "User created", registerResponse)
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
