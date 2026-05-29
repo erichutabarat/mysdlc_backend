@@ -21,8 +21,60 @@ func (s *SDLCService) GetSDLCByID(id uint) (*model.SDLC, error) {
 	return s.Repo.GetSDLCByID(id)
 }
 
-func (s *SDLCService) UpdateSDLC(sdlc *model.SDLC) error {
-	return s.Repo.UpdateSDLC(sdlc)
+func (s *SDLCService) UpdateSDLC(id uint, req *model.UpdateSDLCRequest) (*model.SDLC, error) {
+
+	sdlc, err := s.Repo.GetSDLCByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Name != nil {
+		sdlc.Name = *req.Name
+	}
+
+	if req.Description != nil {
+		sdlc.Description = *req.Description
+	}
+
+	if req.Steps != nil {
+
+		for _, stepReq := range *req.Steps {
+
+			for i, step := range sdlc.Steps {
+
+				if step.ID == stepReq.ID {
+
+					if stepReq.Name != nil {
+						sdlc.Steps[i].Name = *stepReq.Name
+					}
+
+					if stepReq.Description != nil {
+						sdlc.Steps[i].Description = *stepReq.Description
+					}
+
+					if stepReq.Order != nil {
+						sdlc.Steps[i].Order = *stepReq.Order
+					}
+
+					if stepReq.Required != nil {
+						sdlc.Steps[i].Required = *stepReq.Required
+					}
+
+					err := s.Repo.UpdateSDLCStep(&sdlc.Steps[i])
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+		}
+	}
+
+	err = s.Repo.UpdateSDLC(sdlc)
+	if err != nil {
+		return nil, err
+	}
+
+	return sdlc, nil
 }
 
 func (s *SDLCService) DeleteSDLC(id uint) error {

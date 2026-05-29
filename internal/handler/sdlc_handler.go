@@ -59,31 +59,35 @@ func (h *SDLCHandler) GetSDLCByID(c *gin.Context) {
 }
 
 func (h *SDLCHandler) UpdateSDLC(c *gin.Context) {
+
 	userRole, exists := c.Get("role")
 	if !exists || userRole != "admin" {
 		response.Error(c, 403, "Forbidden - Admins only")
 		return
 	}
-	
+
 	idParam := c.Param("id")
+
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		response.Error(c, 400, "Invalid SDLC ID")
 		return
 	}
 
-	var sdlc model.SDLC
-	if err := c.ShouldBindJSON(&sdlc); err != nil {
+	var req model.UpdateSDLCRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, 400, "Invalid request body")
 		return
 	}
-	sdlc.ID = uint(id)
-	
-	if err := h.Service.UpdateSDLC(&sdlc); err != nil {
+
+	updatedSDLC, err := h.Service.UpdateSDLC(uint(id), &req)
+	if err != nil {
 		response.Error(c, 500, "Failed to update SDLC")
 		return
 	}
-	response.Success(c, 200, "SDLC updated successfully", sdlc)
+
+	response.Success(c, 200, "SDLC updated successfully", updatedSDLC)
 }
 
 func (h *SDLCHandler) DeleteSDLC(c *gin.Context) {
