@@ -53,19 +53,27 @@ func (h *ProjectHandler) GetAllProjects(c *gin.Context) {
 
 func (h *ProjectHandler) GetProjectByID(c *gin.Context) {
 	paramID := c.Param("id")
+	userID, exists := c.Get("userID")
+	if !exists {
+		response.Error(c, 401, "Unauthorized")
+		return
+	}
 	projectID, err := strconv.Atoi(paramID)
 	if err != nil {
 		response.Error(c, 400, "Invalid project ID")
 		return
 	}
 
-	project, err := h.Service.GetProjectByID(uint(projectID))
+	project, phase, err := h.Service.GetProjectByID(uint(projectID), userID.(uint))
 	if err != nil {
 		response.Error(c, 404, "Project not found")
 		return
 	}
 
-	response.Success(c, 200, "Project retrieved successfully", project)
+	response.Success(c, 200, "Project retrieved successfully", map[string]interface{}{
+		"project": project,
+		"phases":  phase,
+	})
 }
 
 func (h *ProjectHandler) DeleteProjectByID(c *gin.Context) {

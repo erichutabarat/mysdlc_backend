@@ -94,8 +94,22 @@ func (s *ProjectService) GetAllProjects(ownerID uint) ([]model.ProjectResponse, 
     return response, nil
 }
 
-func (s *ProjectService) GetProjectByID(id uint) (*model.Project, error) {
-	return s.Repo.GetByID(id)
+func (s *ProjectService) GetProjectByID(
+    id uint,
+    ownerID uint,
+) (*model.Project, []model.ProjectPhase, error) {
+
+    project, err := s.Repo.GetByID(id, ownerID)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    phases, err := s.Repo.GetPhasesByProjectID(id)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    return project, phases, nil
 }
 
 func (s *ProjectService) DeleteProjectByID(id uint) error {

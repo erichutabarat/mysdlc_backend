@@ -17,14 +17,17 @@ func (r *ProjectRepository) Update(project *model.Project) error {
     return r.DB.Save(project).Error
 }
 
-func (r *ProjectRepository) GetByID(id uint) (*model.Project, error) {
+func (r *ProjectRepository) GetByID(id uint, ownerID uint) (*model.Project, error) {
     var project model.Project
     err := r.DB.Preload("Owner").
         Preload("SDLC").
-        First(&project, id).Error
+        Where("id = ? AND owner_id = ?", id, ownerID).
+        First(&project).Error
+        
     if err != nil {
         return nil, err
     }
+    
     return &project, nil
 }
 
