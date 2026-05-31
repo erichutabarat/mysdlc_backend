@@ -9,6 +9,7 @@ type CreateProjectRequest struct {
 type ProjectResponse struct {
     ID    uint   `json:"id"`
     Name  string `json:"name"`
+	Status ProjectStatus `json:"status"`
     Email string `json:"email"`
     SDLCName string `json:"sdlc_name"`
 	CurrentPhase string `json:"current_phase,omitempty"`

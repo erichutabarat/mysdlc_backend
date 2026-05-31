@@ -84,6 +84,7 @@ func (s *ProjectService) GetAllProjects(ownerID uint) ([]model.ProjectResponse, 
         response = append(response, model.ProjectResponse{
             ID:   p.ID,
             Name: p.Name,
+            Status: p.Status,
             Email: p.Owner.Email,
             SDLCName: p.SDLC.Name,
             CurrentPhase: phaseMap[p.ID],
