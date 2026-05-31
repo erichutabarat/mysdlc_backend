@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+	"github.com/gin-contrib/cors"
 	"mysdlc_backend/internal/config"
 	"github.com/gin-gonic/gin"
 	"mysdlc_backend/internal/repository"
@@ -13,6 +15,14 @@ func main() {
 	// Initialize DB and Gin
 	db := config.ConnectDB()
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Your Next.js URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// Initialize repositories, services, handlers
 	userRepo := &repository.UserRepository{DB: db}
