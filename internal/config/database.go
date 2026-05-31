@@ -49,19 +49,6 @@ func ConnectDB() *gorm.DB {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
-	// Pass 2 — now add the FK from projects.current_phase_id → project_phases.id
-	// project_phases table now exists so this succeeds
-	err = db.Exec(`
-		ALTER TABLE projects 
-		ADD CONSTRAINT fk_projects_current_phase 
-		FOREIGN KEY (current_phase_id) REFERENCES project_phases(id)
-		ON DELETE SET NULL
-	`).Error
-	if err != nil {
-		// Don't fatal — constraint may already exist on subsequent runs
-		log.Printf("Warning: could not add current_phase FK (may already exist): %v", err)
-	}
-
 	log.Println("Database connection established")
 	return db
 }
