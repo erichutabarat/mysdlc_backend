@@ -73,8 +73,24 @@ func (s *ProjectService) CreateProject(ownerID uint, req *model.CreateProjectReq
     return project, nil
 }
 
-func (s *ProjectService) GetAllProjects(ownerID uint) ([]model.Project, error) {
-	return s.Repo.GetAllByOwnerID(ownerID)
+func (s *ProjectService) GetAllProjects(ownerID uint) ([]model.ProjectResponse, error) {
+    projects, phaseMap, err := s.Repo.GetAllByOwnerID(ownerID)
+    if err != nil {
+        return nil, err
+    }
+
+    var response []model.ProjectResponse
+    for _, p := range projects {
+        response = append(response, model.ProjectResponse{
+            ID:   p.ID,
+            Name: p.Name,
+            Email: p.Owner.Email,
+            SDLCName: p.SDLC.Name,
+            CurrentPhase: phaseMap[p.ID],
+        })
+    }
+
+    return response, nil
 }
 
 func (s *ProjectService) GetProjectByID(id uint) (*model.Project, error) {
