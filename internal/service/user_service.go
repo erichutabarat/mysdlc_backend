@@ -46,3 +46,11 @@ func (s *UserService) Login(email, password string) (string, error) {
 func (s *UserService) Profile(userID uint) (*model.User, error) {
     return s.Repo.GetUserByID(userID)
 }
+
+func (s *UserService) Invitation(userID uint) ([]model.Invitation, error) {
+    return s.Repo.GetInvitationsByUserID(userID)
+}
+
+func (s *UserService) RespondInvitation(userID uint, req model.RespondInvitationRequest) error {
+    return s.Repo.UpdateInvitationStatus(userID, req.ProjectID, req.Status)
+}

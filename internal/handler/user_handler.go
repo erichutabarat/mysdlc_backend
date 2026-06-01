@@ -69,3 +69,38 @@ func (h *UserHandler) Profile(c *gin.Context) {
     
     response.Success(c, 200, "User profile", user)
 }
+
+func (h *UserHandler) Invitation(c *gin.Context) {
+    userID, exists := c.Get("userID")
+    if !exists {
+        response.Error(c, 401, "Unauthorized")
+        return
+    }
+    invitations, err := h.Service.Invitation(userID.(uint))
+    if err != nil {
+        response.Error(c, 500, "Failed to fetch invitations")
+        return
+    }
+    response.Success(c, 200, "User invitations", invitations)
+}
+
+func (h *UserHandler) RespondInvitation(c *gin.Context) {
+    userID, exists := c.Get("userID")
+    if !exists {
+        response.Error(c, 401, "Unauthorized")
+        return
+    }
+    
+    var req model.RespondInvitationRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        response.Error(c, 400, "Invalid request")
+        return
+    }
+
+    if err := h.Service.RespondInvitation(userID.(uint), req); err != nil {
+        response.Error(c, 500, "Failed to respond to invitation")
+        return
+    }
+
+    response.Success(c, 200, "Invitation responded to", nil)
+}

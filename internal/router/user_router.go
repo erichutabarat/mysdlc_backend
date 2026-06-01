@@ -18,6 +18,8 @@ func RegisterUserRoutes(rg *gin.RouterGroup, h *handler.UserHandler) {
         authenticated.Use(middleware.AuthMiddleware("user"))
         {
             authenticated.GET("/profile", h.Profile)
+            authenticated.GET("/invitation", h.Invitation)
+            authenticated.POST("/invitation", h.RespondInvitation)
         }
     }
 }
