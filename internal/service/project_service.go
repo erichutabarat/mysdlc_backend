@@ -120,7 +120,7 @@ func (s *ProjectService) DeleteProjectByID(id uint, userID uint) (*model.Project
 }
 
 // PROJECT MEMBER SERVICE
-func (s *ProjectService) GetProjectMembers(projectID uint, userID uint) ([]model.ProjectMember, error) {
+func (s *ProjectService) GetProjectMembers(projectID uint, userID uint) ([]model.ProjectMemberDTO, error) {
 	project, err := s.Repo.GetByID(projectID, userID)
 	if err != nil {
 		return nil, err

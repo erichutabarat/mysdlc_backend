@@ -96,18 +96,20 @@ func (r *ProjectRepository) GetPhasesByProjectID(projectID uint) ([]model.Projec
 }
 
 // PROJECT MEMBER REPO
-func (r *ProjectRepository) GetAllMembers(projectID uint) ([]model.ProjectMember, error) {
-	var members []model.ProjectMember
+func (r *ProjectRepository) GetAllMembers(projectID uint) ([]model.ProjectMemberDTO, error) {
+    var dtos []model.ProjectMemberDTO
 
-	err := r.DB.
-		Where("project_id = ?", projectID).
-		Find(&members).Error
+    err := r.DB.Table("project_members").
+        Select("project_members.user_id, project_members.project_id, project_members.role, project_members.status, users.email").
+        Joins("JOIN users ON users.id = project_members.user_id").
+        Where("project_members.project_id = ?", projectID).
+        Scan(&dtos).Error
 
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	return members, nil
+    return dtos, nil
 }
 
 func (r *ProjectRepository) AddMember(projectID uint, userId uint, memberData *model.AddProjectMemberRequest) (*model.ProjectMember, error) {
