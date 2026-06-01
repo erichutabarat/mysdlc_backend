@@ -47,6 +47,15 @@ const (
 	RoleViewer      ProjectRole = "viewer"
 )
 
+// MemberStatus types
+type MemberStatus string
+
+const (
+	MemberPending  MemberStatus = "pending"
+	MemberAccepted MemberStatus = "accepted"
+	MemberRejected MemberStatus = "rejected"
+)
+
 // UserRole types
 type UserRole string
 

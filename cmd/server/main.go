@@ -34,7 +34,7 @@ func main() {
 	sdlcHandler := &handler.SDLCHandler{Service: sdlcService}
 
 	projectRepo := &repository.ProjectRepository{DB: db}
-	projectService := &service.ProjectService{Repo: projectRepo, SDLCRepo: sdlcRepo}
+	projectService := &service.ProjectService{Repo: projectRepo, SDLCRepo: sdlcRepo, UserRepo: userRepo}
 	projectHandler := &handler.ProjectHandler{Service: projectService}
 
 

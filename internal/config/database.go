@@ -35,15 +35,14 @@ func ConnectDB() *gorm.DB {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// config/database.go
-
 	// Pass 1 — create tables without the circular FK
 	err = db.AutoMigrate(
 		&model.User{},
 		&model.SDLC{},
 		&model.SDLCSteps{},
-		&model.Project{},    // creates projects table (CurrentPhaseID column exists but no FK yet)
-		&model.ProjectPhase{}, // creates project_phases table (references projects ✓)
+		&model.Project{},
+		&model.ProjectPhase{},
+		&model.ProjectMember{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)

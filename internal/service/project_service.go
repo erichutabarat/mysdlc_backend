@@ -10,7 +10,10 @@ import (
 type ProjectService struct {
 	Repo *repository.ProjectRepository
 	SDLCRepo *repository.SDLCRepository
+    UserRepo *repository.UserRepository
 }
+
+var ErrUnauthorized = errors.New("unauthorized: only project owner can view members")
 
 func (s *ProjectService) CreateProject(ownerID uint, req *model.CreateProjectRequest) (*model.Project, error) {
     // 1. Check SDLC exists and is active
@@ -114,4 +117,42 @@ func (s *ProjectService) GetProjectByID(
 
 func (s *ProjectService) DeleteProjectByID(id uint, userID uint) (*model.Project, error) {
 	return s.Repo.Delete(id, userID)
+}
+
+// PROJECT MEMBER SERVICE
+func (s *ProjectService) GetProjectMembers(projectID uint, userID uint) ([]model.ProjectMember, error) {
+	project, err := s.Repo.GetByID(projectID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if project.OwnerID != userID {
+		return nil, ErrUnauthorized
+	}
+
+	return s.Repo.GetAllMembers(projectID)
+}
+
+func (s *ProjectService) AddProjectMember(projectID uint, userID uint, newMemberData *model.AddProjectMemberRequest) (*model.ProjectMember, error) {
+    project, err := s.Repo.GetByID(projectID, userID)
+    if err != nil {
+        return nil, err
+    }
+
+    if project.OwnerID != userID {
+        return nil, ErrUnauthorized
+    }
+
+    // Check and get the user by email
+    newMember, err := s.UserRepo.GetUserByEmail(newMemberData.Email)
+    if err != nil {
+        return nil, errors.New("user with this email does not exist")
+    }
+    var projectMember *model.ProjectMember
+    projectMember, err = s.Repo.AddMember(projectID, newMember.ID, newMemberData)
+    if err != nil {
+        return nil, err
+    }
+
+    return projectMember, nil
 }

@@ -94,3 +94,31 @@ func (r *ProjectRepository) GetPhasesByProjectID(projectID uint) ([]model.Projec
     err := r.DB.Where("project_id = ?", projectID).Find(&phases).Error
     return phases, err
 }
+
+// PROJECT MEMBER REPO
+func (r *ProjectRepository) GetAllMembers(projectID uint) ([]model.ProjectMember, error) {
+	var members []model.ProjectMember
+
+	err := r.DB.
+		Where("project_id = ?", projectID).
+		Find(&members).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}
+
+func (r *ProjectRepository) AddMember(projectID uint, userId uint, memberData *model.AddProjectMemberRequest) (*model.ProjectMember, error) {
+    member := model.ProjectMember{
+        ProjectID: projectID,
+        UserID:    userId,
+        Role:      memberData.Role,
+    }
+    err := r.DB.Create(&member).Error
+    if err != nil {
+        return nil, err
+    }
+    return &member, nil
+}

@@ -12,6 +12,8 @@ func RegisterProjectRoutes(rg *gin.RouterGroup, handler *handler.ProjectHandler)
 	{
 		projects.GET("/", handler.GetAllProjects)
 		projects.GET("/:id", handler.GetProjectByID)
+		projects.GET("/:id/members", handler.GetProjectMembers)
+		projects.POST("/:id/members", handler.AddProjectMember)
 		projects.DELETE("/:id", handler.DeleteProjectByID)
 		projects.POST("/", handler.CreateProject)
 	}
