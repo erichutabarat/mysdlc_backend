@@ -112,6 +112,6 @@ func (s *ProjectService) GetProjectByID(
     return project, phases, nil
 }
 
-func (s *ProjectService) DeleteProjectByID(id uint) error {
-	return s.Repo.Delete(id)
+func (s *ProjectService) DeleteProjectByID(id uint, userID uint) (*model.Project, error) {
+	return s.Repo.Delete(id, userID)
 }

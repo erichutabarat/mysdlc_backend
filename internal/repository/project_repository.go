@@ -65,11 +65,25 @@ func (r *ProjectRepository) GetAllByOwnerID(ownerID uint) ([]model.Project, map[
     return projects, phaseMap, nil
 }
 
-func (r *ProjectRepository) Delete(id uint) error {
-	return r.DB.Delete(&model.Project{}, id).Error
+func (r *ProjectRepository) Delete(id uint, ownerID uint) (*model.Project, error) {
+	var project model.Project
+
+	err := r.DB.
+		Where("id = ? AND owner_id = ?", id, ownerID).
+		First(&project).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.DB.Delete(&project).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &project, nil
 }
 
-// repository/project_repository.go
 func (r *ProjectRepository) CreatePhases(phases []model.ProjectPhase) error {
     return r.DB.Create(&phases).Error
 }

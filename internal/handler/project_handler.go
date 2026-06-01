@@ -5,7 +5,8 @@ import (
 	"mysdlc_backend/internal/model"
 	"mysdlc_backend/internal/service"
 	"mysdlc_backend/pkg/response"
-
+	"errors"
+	"gorm.io/gorm"
 	"github.com/gin-gonic/gin"
 )
 
@@ -78,17 +79,29 @@ func (h *ProjectHandler) GetProjectByID(c *gin.Context) {
 
 func (h *ProjectHandler) DeleteProjectByID(c *gin.Context) {
 	paramID := c.Param("id")
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		response.Error(c, 401, "Unauthorized")
+		return
+	}
+
 	projectID, err := strconv.Atoi(paramID)
 	if err != nil {
 		response.Error(c, 400, "Invalid project ID")
 		return
 	}
-	
-	err = h.Service.DeleteProjectByID(uint(projectID))
+
+	_, err = h.Service.DeleteProjectByID(uint(projectID), userID.(uint))
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.Error(c, 404, "Project not found")
+		return
+	}
+
 	if err != nil {
 		response.Error(c, 500, err.Error())
 		return
 	}
-	
+
 	response.Success(c, 200, "Project deleted successfully", nil)
 }
