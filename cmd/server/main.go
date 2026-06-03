@@ -16,7 +16,11 @@ func main() {
 	db := config.ConnectDB()
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // Your Next.js URL
+		AllowOrigins: []string{
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+			"http://frontend:3000",
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -47,5 +51,5 @@ func main() {
 	router.RegisterHealthRoutes(v1, db)
 
 	// Start server
-	r.Run(":8080")
+	r.Run("0.0.0.0:8080")
 }

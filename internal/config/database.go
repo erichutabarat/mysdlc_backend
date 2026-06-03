@@ -14,7 +14,7 @@ func ConnectDB() *gorm.DB {
 	// 1. Load .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Warning: No .env file found, using system environment variables")
 	}
 
 	// 2. Build DSN string
@@ -25,6 +25,7 @@ func ConnectDB() *gorm.DB {
 		os.Getenv("DB_PORT"),
 		os.Getenv("DB_NAME"),
 	)
+	fmt.Printf("DEBUG: Connecting to DSN: %s\n", dsn)
 
 	// 3. Open connection
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
