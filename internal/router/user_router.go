@@ -10,8 +10,14 @@ func RegisterUserRoutes(rg *gin.RouterGroup, h *handler.UserHandler) {
     users := rg.Group("/users")
     {
         // Public routes
-        users.POST("/register", h.Create)
-        users.POST("/login", h.Login)
+
+        // captcha protected routes
+        captchaProtected := users.Group("/")
+        captchaProtected.Use(middleware.VerifyTurnstile())
+        {
+            captchaProtected.POST("/register", h.Create)
+            captchaProtected.POST("/login", h.Login)
+        }
 
         // Protected routes (sub-group with middleware)
         authenticated := users.Group("/")
