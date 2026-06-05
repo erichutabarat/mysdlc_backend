@@ -20,6 +20,7 @@ func main() {
 			"http://localhost:3000",
 			"http://127.0.0.1:3000",
 			"http://frontend:3000",
+			"https://mysdlc.my.id",
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Turnstile-Token"},
