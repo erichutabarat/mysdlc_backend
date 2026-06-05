@@ -10,7 +10,8 @@ import (
 )
 
 type turnstileResponse struct {
-	Success bool `json:"success"`
+    Success    bool     `json:"success"`
+    ErrorCodes []string `json:"error-codes"` // ← add this
 }
 
 func VerifyTurnstile() gin.HandlerFunc {
@@ -38,7 +39,7 @@ func VerifyTurnstile() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "invalid captcha"})
 			return
 		}
-
+		log.Printf("Turnstile success: %v, errors: %v", result.Success, result.ErrorCodes)
 		// Proceed to the next handler
 		c.Next()
 	}
