@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-
+	"log"
 	"github.com/gin-gonic/gin"
 )
 
