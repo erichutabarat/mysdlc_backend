@@ -15,6 +15,7 @@ func main() {
 	// Initialize DB and Gin
 	db := config.ConnectDB()
 	r := gin.Default()
+	r.RedirectTrailingSlash = false
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:3000",

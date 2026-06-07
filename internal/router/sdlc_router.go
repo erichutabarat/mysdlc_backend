@@ -9,7 +9,7 @@ import (
 func RegisterSDLCRoutes(rg *gin.RouterGroup, h *handler.SDLCHandler){
 	sdlc := rg.Group("/sdlc")
 	{
-		sdlc.GET("/", h.GetAllSDLCs)
+		sdlc.GET("", h.GetAllSDLCs)
 		sdlc.GET("/:id", h.GetSDLCByID)
 
 
@@ -17,7 +17,7 @@ func RegisterSDLCRoutes(rg *gin.RouterGroup, h *handler.SDLCHandler){
 		authenticated := sdlc.Group("/")
 		authenticated.Use(middleware.AuthMiddleware("admin"))
 		{
-			authenticated.POST("/", h.CreateSDLC)
+			authenticated.POST("", h.CreateSDLC)
 			authenticated.PUT("/:id", h.UpdateSDLC)
 			authenticated.DELETE("/:id", h.DeleteSDLC)
 			
