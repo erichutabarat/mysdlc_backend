@@ -1,0 +1,25 @@
+name: Notify Root on Push
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    name: Trigger root deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send dispatch to root repo
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.ROOT_DISPATCH_TOKEN }}
+          repository: erichutabarat/mysdlc
+          event-type: backend-updated
+          client-payload: |
+            {
+              "service": "backend",
+              "sha": "${{ github.sha }}",
+              "ref": "${{ github.ref }}",
+              "actor": "${{ github.actor }}"
+            }
