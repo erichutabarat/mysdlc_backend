@@ -1,25 +1,54 @@
-name: Notify Root on Push
+name: Build and Notify
 
 on:
   push:
     branches: [main]
 
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/mysdlc-backend
+
 jobs:
-  notify:
-    name: Trigger root deployment
+  build-and-notify:
+    name: Build image and trigger deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      - name: Send dispatch to root repo
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Notify root repo
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.ROOT_DISPATCH_TOKEN }}
-          repository: erichutabarat/mysdlc
+          repository: erichutabarat/MySDLC
           event-type: backend-updated
           client-payload: |
             {
               "service": "backend",
+              "image": "${{ env.IMAGE }}:${{ github.sha }}",
               "sha": "${{ github.sha }}",
-              "ref": "${{ github.ref }}",
               "actor": "${{ github.actor }}"
             }
