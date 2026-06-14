@@ -23,7 +23,7 @@ func VerifyTurnstile() gin.HandlerFunc {
 			return
 		}
 
-		if token == "dev-token" {
+		if token == "dev-token9812" {
 			log.Println("Using dev token, skipping verification")
 			c.Next()
 			return
