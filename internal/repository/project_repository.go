@@ -124,3 +124,30 @@ func (r *ProjectRepository) AddMember(projectID uint, userId uint, memberData *m
     }
     return &member, nil
 }
+
+func (r *ProjectRepository) IsUserMember(projectID uint, userID uint) (bool, error) {
+    var exists bool
+    
+    err := r.DB.Table("projects").
+        Select("exists (select 1 from projects where id = ? and owner_id = ?) OR exists (select 1 from project_members where project_id = ? and user_id = ?)", 
+            projectID, userID, projectID, userID).
+        Scan(&exists).Error
+        
+    return exists, err
+}
+
+func (r *ProjectRepository) GetTasksByPhase(projectID uint, phaseID uint) ([]model.Task, error) {
+    var tasks []model.Task
+
+    // Using .Where with struct or chainable methods
+    err := r.DB.Model(&model.Task{}).
+        Where("project_id = ? AND phase_id = ?", projectID, phaseID).
+        Order("created_at DESC").
+        Find(&tasks).Error
+
+    if err != nil {
+        return nil, err
+    }
+
+    return tasks, nil
+}

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"strconv"
 	"mysdlc_backend/internal/model"
 	"mysdlc_backend/internal/service"
@@ -163,4 +164,42 @@ func (h *ProjectHandler) AddProjectMember(c *gin.Context) {
 	}
 	response.Success(c, 200, "Project member added successfully", member)
 
+}
+
+// TASKS HANDLERS
+func (h *ProjectHandler) GetTasks(c *gin.Context) {
+    paramID := c.Param("id")
+    phaseIDStr := c.Param("phase_id")
+
+    rawUserID, exists := c.Get("userID")
+    if !exists {
+        response.Error(c, 401, "Unauthorized")
+        return
+    }
+    
+    userID, ok := rawUserID.(uint)
+    if !ok {
+        response.Error(c, 500, "Internal Server Error: Invalid user ID format")
+        return
+    }
+
+    pID, err := strconv.ParseUint(paramID, 10, 32)
+    if err != nil {
+        response.Error(c, 400, "Invalid project ID")
+        return
+    }
+
+    phID, err := strconv.ParseUint(phaseIDStr, 10, 32)
+    if err != nil {
+        response.Error(c, 400, "Invalid phase ID")
+        return
+    }
+
+    tasks, err := h.Service.GetTasks(uint(pID), userID, uint(phID))
+    if err != nil {
+        response.Error(c, 500, err.Error())
+        return
+    }
+	fmt.Print(tasks)
+    response.Success(c, 200, "Tasks retrieved successfully", tasks)
 }

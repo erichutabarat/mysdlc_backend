@@ -20,6 +20,7 @@ type ProjectServiceInterface interface {
 	DeleteProjectByID(id uint, userID uint) (*model.Project, error)
 	GetProjectMembers(projectID uint, userID uint) ([]model.ProjectMemberDTO, error)
 	AddProjectMember(projectID uint, userID uint, newMemberData *model.AddProjectMemberRequest) (*model.ProjectMember, error)
+    GetTasks(projectID uint, userID uint, phaseID uint) ([]model.Task, error)
 }
 
 // safety check to ensure ProjectService implements ProjectServiceInterface
@@ -167,4 +168,18 @@ func (s *ProjectService) AddProjectMember(projectID uint, userID uint, newMember
     }
 
     return projectMember, nil
+}
+
+func (s *ProjectService) GetTasks(projectID uint, userID uint, phaseID uint) ([]model.Task, error) {
+    isMember, err := s.Repo.IsUserMember(projectID, userID)
+    if err != nil {
+        return nil, err
+    }
+    if !isMember {
+        return nil, errors.New("user is not a member of this project")
+    }
+
+    var tasks[]model.Task
+    tasks, err = s.Repo.GetTasksByPhase(projectID, phaseID)
+    return tasks , err
 }

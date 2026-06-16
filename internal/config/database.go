@@ -44,6 +44,8 @@ func ConnectDB() *gorm.DB {
 		&model.Project{},
 		&model.ProjectPhase{},
 		&model.ProjectMember{},
+		&model.Task{},
+		&model.TaskTemplate{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
