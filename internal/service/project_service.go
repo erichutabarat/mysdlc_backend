@@ -13,6 +13,18 @@ type ProjectService struct {
     UserRepo *repository.UserRepository
 }
 
+type ProjectServiceInterface interface {
+	CreateProject(ownerID uint, req *model.CreateProjectRequest) (*model.Project, error)
+	GetAllProjects(ownerID uint) ([]model.ProjectResponse, error)
+	GetProjectByID(id uint, ownerID uint) (*model.Project, []model.ProjectPhase, error)
+	DeleteProjectByID(id uint, userID uint) (*model.Project, error)
+	GetProjectMembers(projectID uint, userID uint) ([]model.ProjectMemberDTO, error)
+	AddProjectMember(projectID uint, userID uint, newMemberData *model.AddProjectMemberRequest) (*model.ProjectMember, error)
+}
+
+// safety check to ensure ProjectService implements ProjectServiceInterface
+var _ ProjectServiceInterface = (*ProjectService)(nil)
+
 var ErrUnauthorized = errors.New("unauthorized: only project owner can view members")
 
 func (s *ProjectService) CreateProject(ownerID uint, req *model.CreateProjectRequest) (*model.Project, error) {

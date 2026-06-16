@@ -10,6 +10,17 @@ import (
 
 type UserService struct { Repo *repository.UserRepository }
 
+type UserServiceInterface interface {
+	Register(u *model.User) error
+	Login(email, password string) (string, error)
+	Profile(userID uint) (*model.User, error)
+	Invitation(userID uint) ([]model.Invitation, error)
+	RespondInvitation(userID uint, req model.RespondInvitationRequest) error
+}
+
+// safety check to ensure UserService implements UserServiceInterface
+var _ UserServiceInterface = (*UserService)(nil)
+
 func (s *UserService) Register(u *model.User) error {
     // 1. Business Logic: Set Default Role
     if u.Role == "" {

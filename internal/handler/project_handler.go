@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ProjectHandler struct {
-	Service *service.ProjectService
-}
+	type ProjectHandler struct {
+		Service service.ProjectServiceInterface
+	}
 
 var ErrUnauthorized = errors.New("unauthorized: only project owner can view members")
 

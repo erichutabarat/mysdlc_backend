@@ -9,6 +9,21 @@ type SDLCService struct {
 	Repo *repository.SDLCRepository
 }
 
+type SDLCServiceInterface interface {
+	CreateSDLC(sdlc *model.SDLC) error
+	GetAllSDLCs() ([]model.SDLC, error)
+	GetSDLCByID(id uint) (*model.SDLC, error)
+	UpdateSDLC(id uint, req *model.UpdateSDLCRequest) (*model.SDLC, error)
+	DeleteSDLC(id uint) error
+
+	CreateSDLCStep(step *model.SDLCSteps) error
+	UpdateSDLCStep(step *model.SDLCSteps) error
+	DeleteSDLCStep(id uint) error
+}
+
+// safety check to ensure SDLCService implements SDLCServiceInterface
+var _ SDLCServiceInterface = (*SDLCService)(nil)
+
 func (s *SDLCService) CreateSDLC(sdlc *model.SDLC) error {
 	return s.Repo.CreateSDLC(sdlc)
 }

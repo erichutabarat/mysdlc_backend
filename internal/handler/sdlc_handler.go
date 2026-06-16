@@ -10,7 +10,7 @@ import (
 )
 
 type SDLCHandler struct {
-	Service *service.SDLCService
+	Service service.SDLCServiceInterface
 }
 
 func (h *SDLCHandler) CreateSDLC(c *gin.Context){

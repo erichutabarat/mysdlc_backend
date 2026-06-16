@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler struct { Service *service.UserService }
+type UserHandler struct { Service service.UserServiceInterface }
 
 func (h *UserHandler) Create(c *gin.Context) {
     var req model.RegisterRequest
