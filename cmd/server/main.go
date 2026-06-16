@@ -11,6 +11,8 @@ import (
 	"mysdlc_backend/internal/router"
 )
 
+// trigger build
+
 func main() {
 	// Initialize DB and Gin
 	db := config.ConnectDB()
