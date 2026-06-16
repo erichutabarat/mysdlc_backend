@@ -17,14 +17,18 @@ import (
 // Mock Service Implementation
 type MockProjectService struct {
 	CreateProjectFunc func(uint, *model.CreateProjectRequest) (*model.Project, error)
+	GetAllProjectsFunc func(uint) ([]model.ProjectResponse, error)
 }
 
 func (m *MockProjectService) CreateProject(uid uint, req *model.CreateProjectRequest) (*model.Project, error) {
 	return m.CreateProjectFunc(uid, req)
 }
 
+func (m *MockProjectService) GetAllProjects(uid uint) ([]model.ProjectResponse, error) {
+	return m.GetAllProjectsFunc(uid)
+}
+
 // ... Implement other methods as returning nil, nil to satisfy the interface ...
-func (m *MockProjectService) GetAllProjects(uint) ([]model.ProjectResponse, error) { return nil, nil }
 func (m *MockProjectService) GetProjectByID(uint, uint) (*model.Project, []model.ProjectPhase, error) { return nil, nil, nil }
 func (m *MockProjectService) DeleteProjectByID(uint, uint) (*model.Project, error) { return nil, nil }
 func (m *MockProjectService) GetProjectMembers(uint, uint) ([]model.ProjectMemberDTO, error) { return nil, nil }
@@ -93,5 +97,55 @@ func TestCreateProject(t *testing.T) {
 		h.CreateProject(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}
+
+func TestGetAllProjects(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Success", func(t *testing.T) {
+		mockService := &MockProjectService{
+			GetAllProjectsFunc: func(uid uint) ([]model.ProjectResponse, error) {
+				return []model.ProjectResponse{
+					{ID: 1, Name: "Project 1", Status: model.ProjectActive, Email: "project1@example.com", SDLCName: "SDLC 1"},
+					{ID: 2, Name: "Project 2", Status: model.ProjectArchived, Email: "project2@example.com", SDLCName: "SDLC 2"},
+				}, nil
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+
+		h.GetAllProjects(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Unauthorized_NoUserID", func(t *testing.T) {
+		h := &handler.ProjectHandler{}
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		h.GetAllProjects(c)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+
+	t.Run("Service_Error", func(t *testing.T) {
+		mockService := &MockProjectService{
+			GetAllProjectsFunc: func(uint) ([]model.ProjectResponse, error) {
+				return nil, errors.New("database error")
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+		
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+		h.GetAllProjects(c)
+		
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 }
