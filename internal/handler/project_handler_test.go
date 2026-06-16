@@ -22,6 +22,7 @@ type MockProjectService struct {
 	GetProjectByIDFunc func(uint, uint) (*model.Project, []model.ProjectPhase, error)
 	DeleteProjectByIDFunc func(uint, uint) (*model.Project, error)
 	GetProjectMembersFunc func(uint, uint) ([]model.ProjectMemberDTO, error)
+	AddProjectMemberFunc func(uint, uint, *model.AddProjectMemberRequest) (*model.ProjectMember, error)
 }
 
 func (m *MockProjectService) CreateProject(uid uint, req *model.CreateProjectRequest) (*model.Project, error) {
@@ -44,8 +45,11 @@ func (m *MockProjectService) GetProjectMembers(pid uint, uid uint) ([]model.Proj
 	return m.GetProjectMembersFunc(pid, uid)
 }
 
-// ... Implement other methods as returning nil, nil to satisfy the interface ...
-func (m *MockProjectService) AddProjectMember(uint, uint, *model.AddProjectMemberRequest) (*model.ProjectMember, error) { return nil, nil }
+func (m *MockProjectService) AddProjectMember(pid uint, uid uint, req *model.AddProjectMemberRequest) (*model.ProjectMember, error) { 
+	return m.AddProjectMemberFunc(pid, uid, req)
+}
+
+// TEST 
 
 func TestCreateProject(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -293,6 +297,47 @@ func TestProjectMember(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 		c.Params = gin.Params{{Key: "id", Value: "1"}}
 		h.DeleteProjectByID(c)
+		
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+}
+
+func TestAddProjectMember(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Success", func(t *testing.T) {
+		mockService := &MockProjectService{
+			AddProjectMemberFunc: func(pid uint, uid uint, req *model.AddProjectMemberRequest) (*model.ProjectMember, error) {
+				return &model.ProjectMember{UserID: uid, ProjectID: pid, Role: model.RoleContributor, Status: model.MemberPending}, nil
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+
+		reqBody, _ := json.Marshal(model.AddProjectMemberRequest{Email:"user2@gmail.com", Role: "contributor"})
+		c.Request = httptest.NewRequest("POST", "/memberss", bytes.NewBuffer(reqBody))
+		c.Request.Header.Set("Content-Type", "application/json")
+
+		h.AddProjectMember(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Unauthorized USerID", func(t *testing.T){
+		mockService := &MockProjectService{
+			AddProjectMemberFunc: func(pid uint, uid uint, req *model.AddProjectMemberRequest) (*model.ProjectMember, error) {
+				return &model.ProjectMember{UserID: uid, ProjectID: pid, Role: model.RoleContributor, Status: model.MemberPending}, nil
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+		h.AddProjectMember(c)
 		
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
