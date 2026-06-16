@@ -9,11 +9,18 @@ import (
 	"mysdlc_backend/internal/service"
 	"mysdlc_backend/internal/handler"
 	"mysdlc_backend/internal/router"
+	"mysdlc_backend/pkg/jwt"
+	"github.com/joho/godotenv"
+	"log"
 )
 
 // trigger build
 
 func main() {
+	godotenv.Load()
+	if err := jwt.InitJWT(); err != nil {
+        log.Fatal(err)
+    }
 	// Initialize DB and Gin
 	db := config.ConnectDB()
 	r := gin.Default()

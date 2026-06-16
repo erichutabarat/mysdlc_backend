@@ -1,27 +1,23 @@
 package jwt
 
 import (
-	"log"
 	"os"
 	"time"
 	"mysdlc_backend/internal/model"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
+	"errors"
 )
 
 var jwtKey []byte
 
-// init() runs automatically when the package is initialized
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Warning: .env file not found, using system environment variables")
-	}
-
-	jwtKey = []byte(os.Getenv("JWT_SECRET"))
-	if len(jwtKey) == 0 {
-		log.Fatal("JWT_SECRET is not set in environment variables")
-	}
+// InitJWT initializes the JWT key from environment variables
+func InitJWT() error {
+    key := os.Getenv("JWT_SECRET")
+    if key == "" {
+        return errors.New("JWT_SECRET is not set in environment variables")
+    }
+    jwtKey = []byte(key)
+    return nil
 }
 
 type Claims struct {
@@ -31,6 +27,9 @@ type Claims struct {
 }
 
 func GenerateToken(userID uint, role model.UserRole) (string, error) {
+	if len(jwtKey) == 0 {
+        return "", errors.New("jwtKey not initialized: call InitJWT() first")
+    }
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		UserID: userID,
