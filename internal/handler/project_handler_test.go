@@ -20,6 +20,7 @@ type MockProjectService struct {
 	CreateProjectFunc func(uint, *model.CreateProjectRequest) (*model.Project, error)
 	GetAllProjectsFunc func(uint) ([]model.ProjectResponse, error)
 	GetProjectByIDFunc func(uint, uint) (*model.Project, []model.ProjectPhase, error)
+	DeleteProjectByIDFunc func(uint, uint) (*model.Project, error)
 }
 
 func (m *MockProjectService) CreateProject(uid uint, req *model.CreateProjectRequest) (*model.Project, error) {
@@ -34,8 +35,11 @@ func (m *MockProjectService) GetProjectByID(uid uint, pid uint) (*model.Project,
 	return m.GetProjectByIDFunc(uid, pid)
 }
 
+func (m *MockProjectService) DeleteProjectByID(uid uint, pid uint) (*model.Project, error) {
+	return m.DeleteProjectByIDFunc(uid, pid)
+}
+
 // ... Implement other methods as returning nil, nil to satisfy the interface ...
-func (m *MockProjectService) DeleteProjectByID(uint, uint) (*model.Project, error) { return nil, nil }
 func (m *MockProjectService) GetProjectMembers(uint, uint) ([]model.ProjectMemberDTO, error) { return nil, nil }
 func (m *MockProjectService) AddProjectMember(uint, uint, *model.AddProjectMemberRequest) (*model.ProjectMember, error) { return nil, nil }
 
@@ -204,6 +208,54 @@ func TestGetProjectByID(t *testing.T) {
 		c.Params = gin.Params{{Key: "id", Value: "999"}}
 		
 		h.GetProjectByID(c)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+}
+
+func TestDeleteProjectByID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Success", func(t *testing.T) {
+		mockService := &MockProjectService{
+			DeleteProjectByIDFunc: func(uid uint, pid uint) (*model.Project, error) {
+				return &model.Project{Model: gorm.Model{ID: pid}, Name: "Deleted Project"}, nil
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+		
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+		h.DeleteProjectByID(c)
+		
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+	
+	t.Run("Unauthorized_NoUserID", func(t *testing.T) {
+		h := &handler.ProjectHandler{}
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+		h.DeleteProjectByID(c)
+		
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+
+	t.Run("Project_NotFound", func(t *testing.T) {
+		mockService := &MockProjectService{
+			DeleteProjectByIDFunc: func(uint, uint) (*model.Project, error) {
+				return nil, gorm.ErrRecordNotFound
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+		
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+		c.Params = gin.Params{{Key: "id", Value: "999"}}
+		h.DeleteProjectByID(c)
+		
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 }
