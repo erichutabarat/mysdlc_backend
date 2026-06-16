@@ -21,6 +21,7 @@ type MockProjectService struct {
 	GetAllProjectsFunc func(uint) ([]model.ProjectResponse, error)
 	GetProjectByIDFunc func(uint, uint) (*model.Project, []model.ProjectPhase, error)
 	DeleteProjectByIDFunc func(uint, uint) (*model.Project, error)
+	GetProjectMembersFunc func(uint, uint) ([]model.ProjectMemberDTO, error)
 }
 
 func (m *MockProjectService) CreateProject(uid uint, req *model.CreateProjectRequest) (*model.Project, error) {
@@ -39,8 +40,11 @@ func (m *MockProjectService) DeleteProjectByID(uid uint, pid uint) (*model.Proje
 	return m.DeleteProjectByIDFunc(uid, pid)
 }
 
+func (m *MockProjectService) GetProjectMembers(pid uint, uid uint) ([]model.ProjectMemberDTO, error) {
+	return m.GetProjectMembersFunc(pid, uid)
+}
+
 // ... Implement other methods as returning nil, nil to satisfy the interface ...
-func (m *MockProjectService) GetProjectMembers(uint, uint) ([]model.ProjectMemberDTO, error) { return nil, nil }
 func (m *MockProjectService) AddProjectMember(uint, uint, *model.AddProjectMemberRequest) (*model.ProjectMember, error) { return nil, nil }
 
 func TestCreateProject(t *testing.T) {
@@ -257,5 +261,39 @@ func TestDeleteProjectByID(t *testing.T) {
 		h.DeleteProjectByID(c)
 		
 		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
+}
+
+func TestProjectMember(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	
+	t.Run("Success", func(t *testing.T) {
+		mockService := &MockProjectService{
+			GetProjectMembersFunc: func(pid uint, uid uint) ([]model.ProjectMemberDTO, error) {
+				return []model.ProjectMemberDTO{
+					{ProjectID: pid, UserID: uid, Role: model.RoleOwner, Status: model.MemberAccepted, Email: "user1@gmail.com"},
+					{ProjectID: pid, UserID: 2, Role: model.RoleContributor, Status: model.MemberAccepted, Email: "user2@gmail.com"},
+				}, nil
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+		
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+		h.GetProjectMembers(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Unauhtorized UserID", func(t *testing.T) {
+		h := &handler.ProjectHandler{}
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+		h.DeleteProjectByID(c)
+		
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
 }
