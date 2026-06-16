@@ -12,12 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"mysdlc_backend/internal/handler"
 	"mysdlc_backend/internal/model"
+	"gorm.io/gorm"
 )
 
 // Mock Service Implementation
 type MockProjectService struct {
 	CreateProjectFunc func(uint, *model.CreateProjectRequest) (*model.Project, error)
 	GetAllProjectsFunc func(uint) ([]model.ProjectResponse, error)
+	GetProjectByIDFunc func(uint, uint) (*model.Project, []model.ProjectPhase, error)
 }
 
 func (m *MockProjectService) CreateProject(uid uint, req *model.CreateProjectRequest) (*model.Project, error) {
@@ -28,8 +30,11 @@ func (m *MockProjectService) GetAllProjects(uid uint) ([]model.ProjectResponse, 
 	return m.GetAllProjectsFunc(uid)
 }
 
+func (m *MockProjectService) GetProjectByID(uid uint, pid uint) (*model.Project, []model.ProjectPhase, error) {
+	return m.GetProjectByIDFunc(uid, pid)
+}
+
 // ... Implement other methods as returning nil, nil to satisfy the interface ...
-func (m *MockProjectService) GetProjectByID(uint, uint) (*model.Project, []model.ProjectPhase, error) { return nil, nil, nil }
 func (m *MockProjectService) DeleteProjectByID(uint, uint) (*model.Project, error) { return nil, nil }
 func (m *MockProjectService) GetProjectMembers(uint, uint) ([]model.ProjectMemberDTO, error) { return nil, nil }
 func (m *MockProjectService) AddProjectMember(uint, uint, *model.AddProjectMemberRequest) (*model.ProjectMember, error) { return nil, nil }
@@ -147,5 +152,58 @@ func TestGetAllProjects(t *testing.T) {
 		h.GetAllProjects(c)
 		
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+}
+
+func TestGetProjectByID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Success", func(t *testing.T) {
+		mockService := &MockProjectService{
+			GetProjectByIDFunc: func(uid uint, pid uint) (*model.Project, []model.ProjectPhase, error) {
+				return &model.Project{Model: gorm.Model{ID: pid}, Name: "Project 1", Description: "A test project"}, []model.ProjectPhase{
+					{Model: gorm.Model{ID: pid}, Name: "Phase 1", Status: model.PhaseActive},
+					{Model: gorm.Model{ID: 2}, Name: "Phase 2", Status: model.PhaseComplete},
+				}, nil
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+
+		h.GetProjectByID(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("Unauthorized_NoUserID", func(t *testing.T) {
+		h := &handler.ProjectHandler{}
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+
+		h.GetProjectByID(c)
+		
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+
+	t.Run("Project_NotFound", func(t *testing.T) {
+		mockService := &MockProjectService{
+			GetProjectByIDFunc: func(uint, uint) (*model.Project, []model.ProjectPhase, error) {
+				return nil, nil, gorm.ErrRecordNotFound
+			},
+		}
+		h := &handler.ProjectHandler{Service: mockService}
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set("userID", uint(1))
+		c.Params = gin.Params{{Key: "id", Value: "999"}}
+		
+		h.GetProjectByID(c)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 }
