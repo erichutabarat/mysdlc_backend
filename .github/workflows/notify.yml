@@ -3,6 +3,11 @@ name: Build and Notify
 on:
   push:
     branches: [main]
+  paths-ignore:
+      - '**/*_test.go'     # ignore any test file changes
+      - 'tests/**'         # ignore tests folder
+      - '**/*.md'          # ignore docs
+      - '.gitignore'
 
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/mysdlc-backend
