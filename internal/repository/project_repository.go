@@ -151,3 +151,33 @@ func (r *ProjectRepository) GetTasksByPhase(projectID uint, phaseID uint) ([]mod
 
     return tasks, nil
 }
+
+func (r *ProjectRepository) CreateTask(projectID uint, phaseID uint, req *model.AddTaskRequest) (*model.Task, error) {
+    priority := model.PriorityMedium
+    if req.Priority != nil {
+        priority = *req.Priority
+    }
+
+    status := model.TaskTodo
+    if req.Status != nil {
+        status = *req.Status
+    }
+
+    newTask := &model.Task{
+        ProjectID:   projectID,
+        PhaseID:     phaseID,
+        Title:       req.Title,
+        Description: req.Description,
+        AssigneeID:  req.AssigneeID,
+        Priority:    priority,
+        Status:      status,
+        DueDate:     req.DueDate,
+    }
+
+    err := r.DB.Create(newTask).Error
+    if err != nil {
+        return nil, err
+    }
+
+    return newTask, nil
+}

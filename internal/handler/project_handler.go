@@ -203,3 +203,45 @@ func (h *ProjectHandler) GetTasks(c *gin.Context) {
 	fmt.Print(tasks)
     response.Success(c, 200, "Tasks retrieved successfully", tasks)
 }
+
+func (h *ProjectHandler) CreateTasks(c *gin.Context) {
+	paramID := c.Param("id")
+    phaseIDStr := c.Param("phase_id")
+
+    rawUserID, exists := c.Get("userID")
+    if !exists {
+        response.Error(c, 401, "Unauthorized")
+        return
+    }
+    
+    userID, ok := rawUserID.(uint)
+    if !ok {
+        response.Error(c, 500, "Internal Server Error: Invalid user ID format")
+        return
+    }
+
+    pID, err := strconv.ParseUint(paramID, 10, 32)
+    if err != nil {
+        response.Error(c, 400, "Invalid project ID")
+        return
+    }
+
+    phID, err := strconv.ParseUint(phaseIDStr, 10, 32)
+    if err != nil {
+        response.Error(c, 400, "Invalid phase ID")
+        return
+    }
+
+	var req model.AddTaskRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        response.Error(c, 400, "Invalid request body")
+        return
+    }
+
+    task, err := h.Service.CreateTask(uint(pID), userID, uint(phID), &req)
+    if err != nil {
+        response.Error(c, 500, err.Error())
+        return
+    }
+    response.Success(c, 201, "Task created successfully", task)
+}

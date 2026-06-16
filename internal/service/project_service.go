@@ -21,6 +21,8 @@ type ProjectServiceInterface interface {
 	GetProjectMembers(projectID uint, userID uint) ([]model.ProjectMemberDTO, error)
 	AddProjectMember(projectID uint, userID uint, newMemberData *model.AddProjectMemberRequest) (*model.ProjectMember, error)
     GetTasks(projectID uint, userID uint, phaseID uint) ([]model.Task, error)
+    CreateTask(projectID uint, userID uint, phaseID uint, req *model.AddTaskRequest) (*model.Task, error)
+
 }
 
 // safety check to ensure ProjectService implements ProjectServiceInterface
@@ -182,4 +184,30 @@ func (s *ProjectService) GetTasks(projectID uint, userID uint, phaseID uint) ([]
     var tasks[]model.Task
     tasks, err = s.Repo.GetTasksByPhase(projectID, phaseID)
     return tasks , err
+}
+
+func (s *ProjectService) CreateTask(projectID uint, userID uint, phaseID uint, req *model.AddTaskRequest) (*model.Task, error) {
+    isAuthorized, err := s.Repo.IsUserMember(projectID, userID)
+    if err != nil {
+        return nil, err
+    }
+    if !isAuthorized {
+        return nil, errors.New("unauthorized: you do not have permission to add tasks to this project")
+    }
+
+    if req.AssigneeID == nil {
+        req.AssigneeID = &userID
+    }
+
+    if req.Priority == nil {
+        defaultPriority := model.PriorityMedium 
+        req.Priority = &defaultPriority
+    }
+
+    if req.Status == nil {
+        defaultStatus := model.TaskTodo 
+        req.Status = &defaultStatus
+    }
+
+    return s.Repo.CreateTask(projectID, phaseID, req)
 }
