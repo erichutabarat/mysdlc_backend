@@ -23,6 +23,7 @@ type ProjectServiceInterface interface {
     GetTasks(projectID uint, userID uint, phaseID uint) ([]model.Task, error)
     CreateTask(projectID uint, userID uint, phaseID uint, req *model.AddTaskRequest) (*model.Task, error)
     DeleteTasks(projectID uint, userID uint, phaseID uint, taskID uint) (*model.Task, error)
+    UpdateTasksStatus(projectID uint, userID uint, phaseID uint, input model.UpdateTasksStatus) (*model.Task, error)
 
 }
 
@@ -228,4 +229,23 @@ func (s *ProjectService) DeleteTasks(projectID uint, userID uint, phaseID uint, 
     }
 
     return deletedTask, nil
+}
+
+func (s *ProjectService) UpdateTasksStatus(projectID uint, userID uint, phaseID uint, input model.UpdateTasksStatus) (*model.Task, error) {
+    // 1. Authorization check
+    isAuthorized, err := s.Repo.IsUserMember(projectID, userID)
+    if err != nil {
+        return nil, err
+    }
+    if !isAuthorized {
+        return nil, errors.New("unauthorized: you do not have permission to update tasks in this project")
+    }
+
+    // 2. Call the repository to update the status
+    updateTask, err := s.Repo.UpdateTasksStatus(projectID, phaseID, input.TaskID, input.Status)
+    if err != nil {
+        return nil, err
+    }
+
+    return updateTask, nil
 }

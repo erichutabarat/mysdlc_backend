@@ -16,3 +16,8 @@ type AddTaskRequest struct {
 type DeleteTasksRequest struct {
 	TaskID uint `json:"task_id" binding:"required"`
 }
+
+type UpdateTasksStatus struct {
+    TaskID uint        `json:"task_id" binding:"required"`
+    Status TaskStatus  `json:"status" binding:"required,oneof=todo in_progress blocked done"`
+}

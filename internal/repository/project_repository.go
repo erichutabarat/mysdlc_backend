@@ -200,3 +200,20 @@ func (r *ProjectRepository) DeleteTask(projectID uint, phaseID uint, taskID uint
 
 	return &task, nil
 }
+
+func (r *ProjectRepository) UpdateTasksStatus(projectID uint, phaseID uint, taskID uint, taskStatus model.TaskStatus) (*model.Task, error) {
+	var task model.Task
+	err := r.DB.Where("id = ? AND phase_id = ? AND project_id = ?", taskID, phaseID, projectID).First(&task).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("task not found or does not belong to this phase/project")
+		}
+		return nil, err
+	}
+
+	if err := r.DB.Model(&task).Update("status", taskStatus).Error; err != nil {
+		return nil, err
+	}
+
+	return &task, nil
+}

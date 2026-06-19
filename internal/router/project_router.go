@@ -19,5 +19,6 @@ func RegisterProjectRoutes(rg *gin.RouterGroup, handler *handler.ProjectHandler)
 		projects.GET("/:id/phases/:phase_id/tasks", handler.GetTasks)
 		projects.POST("/:id/phases/:phase_id/tasks", handler.CreateTasks)
 		projects.DELETE("/:id/phases/:phase_id/tasks", handler.DeleteTasks)
+		projects.PATCH("/:id/phases/:phase_id/tasks", handler.UpdateTasksStatus)
 	}
 }
