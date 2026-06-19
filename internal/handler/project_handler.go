@@ -245,3 +245,48 @@ func (h *ProjectHandler) CreateTasks(c *gin.Context) {
     }
     response.Success(c, 201, "Task created successfully", task)	
 }
+
+func (h *ProjectHandler) DeleteTasks(c *gin.Context) {
+	paramID := c.Param("id")
+    phaseIDStr := c.Param("phase_id")
+
+    rawUserID, exists := c.Get("userID")
+
+	var input model.DeleteTasksRequest
+
+    if !exists {
+        response.Error(c, 401, "Unauthorized")
+        return
+    }
+    
+    userID, ok := rawUserID.(uint)
+    if !ok {
+        response.Error(c, 500, "Internal Server Error: Invalid user ID format")
+        return
+    }
+
+    pID, err := strconv.ParseUint(paramID, 10, 32)
+    if err != nil {
+        response.Error(c, 400, "Invalid project ID")
+        return
+    }
+
+    phID, err := strconv.ParseUint(phaseIDStr, 10, 32)
+    if err != nil {
+        response.Error(c, 400, "Invalid phase ID")
+        return
+    }
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		response.Error(c, 400, "Invalid request body")
+		return
+	}
+
+	taskID := input.TaskID
+	deleteReq, err := h.Service.DeleteTasks(uint(pID), uint(userID), uint(phID), uint(taskID))
+	if err != nil {
+        response.Error(c, 500, err.Error())
+        return
+    }
+    response.Success(c, 200, "Task deleted successfully", deleteReq)
+}

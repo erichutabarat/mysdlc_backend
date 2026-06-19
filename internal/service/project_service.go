@@ -22,6 +22,7 @@ type ProjectServiceInterface interface {
 	AddProjectMember(projectID uint, userID uint, newMemberData *model.AddProjectMemberRequest) (*model.ProjectMember, error)
     GetTasks(projectID uint, userID uint, phaseID uint) ([]model.Task, error)
     CreateTask(projectID uint, userID uint, phaseID uint, req *model.AddTaskRequest) (*model.Task, error)
+    DeleteTasks(projectID uint, userID uint, phaseID uint, taskID uint) (*model.Task, error)
 
 }
 
@@ -210,4 +211,21 @@ func (s *ProjectService) CreateTask(projectID uint, userID uint, phaseID uint, r
     }
 
     return s.Repo.CreateTask(projectID, phaseID, req)
+}
+
+func (s *ProjectService) DeleteTasks(projectID uint, userID uint, phaseID uint, taskID uint) (*model.Task, error) {
+    isAuthorized, err := s.Repo.IsUserMember(projectID, userID)
+    if err != nil {
+        return nil, err
+    }
+    if !isAuthorized {
+        return nil, errors.New("unauthorized: you do not have permission to delete tasks from this project")
+    }
+
+    deletedTask, err := s.Repo.DeleteTask(projectID, phaseID, taskID)
+    if err != nil {
+        return nil, err
+    }
+
+    return deletedTask, nil
 }

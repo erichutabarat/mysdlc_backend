@@ -12,3 +12,7 @@ type AddTaskRequest struct {
     Status      *TaskStatus   `json:"status" binding:"omitempty,oneof=todo in_progress done"`
     DueDate     *time.Time    `json:"due_date"`
 }
+
+type DeleteTasksRequest struct {
+	TaskID uint `json:"task_id" binding:"required"`
+}

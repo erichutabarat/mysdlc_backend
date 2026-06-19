@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"mysdlc_backend/internal/model"
+    "errors"
 )
 
 type ProjectRepository struct {
@@ -180,4 +181,22 @@ func (r *ProjectRepository) CreateTask(projectID uint, phaseID uint, req *model.
     }
 
     return newTask, nil
+}
+
+func (r *ProjectRepository) DeleteTask(projectID uint, phaseID uint, taskID uint) (*model.Task, error) {
+	var task model.Task
+
+	err := r.DB.Where("id = ? AND phase_id = ? AND project_id = ?", taskID, phaseID, projectID).First(&task).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("task not found or does not belong to this phase/project")
+		}
+		return nil, err
+	}
+
+	if err := r.DB.Delete(&task).Error; err != nil {
+		return nil, err
+	}
+
+	return &task, nil
 }
