@@ -243,5 +243,5 @@ func (h *ProjectHandler) CreateTasks(c *gin.Context) {
         response.Error(c, 500, err.Error())
         return
     }
-    response.Success(c, 201, "Task created successfully", task)
+    response.Success(c, 201, "Task created successfully", task)	
 }
